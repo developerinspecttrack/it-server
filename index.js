@@ -5,6 +5,8 @@ import cors from "cors";
 import errorHandler from "./src/middlewares/error.middleware.js";
 import AppError from "./src/utils/app_error.js";
 import { STATUS_CODES } from "./src/utils/enums.js";
+import inspectorRoutes from "./src/routes/inspector.routes.js";
+import swaggerDocs from "./src/config/swagger.js";
 
 dotenv.config()
 const app = express();
@@ -13,10 +15,8 @@ app.use(cors())
 
 
 
-app.get("/protected", (req, res, next) => {
-    next(new AppError("Unauthorized Access", STATUS_CODES.UNAUTHORIZED));
-});
-
+app.use("/api/inspector",inspectorRoutes);
+swaggerDocs(app);
 
 app.use(errorHandler)
 
