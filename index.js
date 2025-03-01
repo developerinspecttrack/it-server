@@ -7,6 +7,7 @@ import AppError from "./src/utils/app_error.js";
 import { STATUS_CODES } from "./src/utils/enums.js";
 import inspectorRoutes from "./src/routes/inspector.routes.js";
 import swaggerDocs from "./src/config/swagger.js";
+import connectDB from "./src/config/db.js";
 
 dotenv.config()
 const app = express();
@@ -23,5 +24,6 @@ app.use(errorHandler)
 
 
 app.listen(process.env.PORT, () => {
+    connectDB()
     console.log(`Server started on the  port ${process.env.PORT}`)
 })
