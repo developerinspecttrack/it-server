@@ -1,0 +1,36 @@
+{
+  "name": "inspect-track-backend",
+  "version": "1.0.0",
+  "description": "All APIs for Inspect Track Field visiting mobile app",
+  "keywords": [
+    "fieldvisit",
+    "analytics",
+    "authentication",
+    "fingerprint",
+    "otp"
+  ],
+  "homepage": "https://github.com/Brien-Austin/inspect-track-server#readme",
+  "bugs": {
+    "url": "https://github.com/Brien-Austin/inspect-track-server/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Brien-Austin/inspect-track-server.git"
+  },
+  "license": "ISC",
+  "author": "Brien-Austin,Selvaraj,Dhamush,AbishekSham",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+"start": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.11.0",
+    "nodemon": "^3.1.9",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  }
+}
