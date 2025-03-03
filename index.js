@@ -8,6 +8,7 @@ import { STATUS_CODES } from "./src/utils/enums.js";
 import inspectorRoutes from "./src/routes/inspector.routes.js";
 import swaggerDocs from "./src/config/swagger.js";
 import connectDB from "./src/config/db.js";
+import authRouter from "./src/routes/auth.routes.js";
 
 dotenv.config()
 const app = express();
@@ -17,6 +18,7 @@ app.use(cors())
 
 
 app.use("/api/inspector",inspectorRoutes);
+app.use("/api/auth",authRouter);
 swaggerDocs(app);
 
 app.use(errorHandler)
