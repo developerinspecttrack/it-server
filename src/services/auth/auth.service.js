@@ -23,9 +23,9 @@ async function sendOtp(emailId) {
         await otpVerify.save();
 
         const response = await resend.emails.send({
-            from: "Inspect Track <noreply@baple.in>",
+            from: "support <noreply@baple.in>",
             to: emailId,
-            subject: "OTP Authentication",
+            subject: "Verify OTP",
             html: `<p>Dear User,</p>
                 <p>Your One-Time Password (OTP) for Inspect Track is: <strong>${otp}</strong></p>
                 <p>This OTP is valid for 10 minutes. Please do not share it with anyone.</p>
