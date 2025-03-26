@@ -2,41 +2,38 @@ import authService from "../../services/auth/auth.service.js";
 import { STATUS_CODES } from "../../utils/enums.js";
 
 async function loginUser(req, res) {
-  try {
-    const { email } = req.body;
+  const { email } = req.body;
 
-    const otpVerification = await authService.sendOtp(email);
-    if (otpVerification && otpVerification.success) {
-      res.status(STATUS_CODES.CREATED).json({
-        message: "OTP sent successfully",
-        otpId: otpVerification.otpId,
-      });
-    }
-  } catch (error) {
-    console.log(error);
-    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      message: "Something went wrong",
+  const sendOtpResponse = await authService.sendOtp(email);
+  if (sendOtpResponse) {
+    res.status(sendOtpResponse.status).json({
+      message: sendOtpResponse.message,
+      otpId: sendOtpResponse.otpId,
+    });
+  }
+}
+
+async function resendOtp(req, res) {
+  const { email } = req.body;
+
+  const resendOtpResponse = await authService.resendOtp(email);
+  if (resendOtpResponse) {
+    res.status(resendOtpResponse.status).json({
+      message: resendOtpResponse.message,
+      otpId: resendOtpResponse.otpId,
     });
   }
 }
 
 async function verifyOtp(req, res) {
-  try {
-    const { otpId, otp } = req.body;
+  const { otpId, otp } = req.body;
 
-    const verificationResult = await authService.verifyOtp(otpId, otp);
-    res
-      .status(verificationResult.status)
-      .json({
-        message: verificationResult.message,
-        token: verificationResult.token,
-      });
-  } catch (error) {
-    console.error("Error in OTP verification:", error);
-    res
-      .status(STATUS_CODES.INTERNAL_SERVER_ERROR)
-      .json({ message: "Something went wrong" });
-  }
+  const verificationResult = await authService.verifyOtp(otpId, otp);
+  res.status(verificationResult.status).json({
+    message: verificationResult.message,
+    accessToken: verificationResult.accessToken,
+    refreshToken: verificationResult.refreshToken,
+  });
 }
 
-export default { loginUser, verifyOtp };
+export default { loginUser, verifyOtp, resendOtp };
