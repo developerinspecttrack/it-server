@@ -26,13 +26,14 @@ async function resendOtp(req, res) {
 }
 
 async function verifyOtp(req, res) {
-  const { otpId, otp } = req.body;
+  const { otpId, otp ,lat,long} = req.body;
 
-  const verificationResult = await authService.verifyOtp(otpId, otp);
+  const verificationResult = await authService.verifyOtp(req, otpId, otp, lat,long   );
   res.status(verificationResult.status).json({
     message: verificationResult.message,
     accessToken: verificationResult.accessToken,
     refreshToken: verificationResult.refreshToken,
+    location: verificationResult.location,
   });
 }
 

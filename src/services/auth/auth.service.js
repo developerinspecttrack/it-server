@@ -3,6 +3,9 @@ import bcrypt from "bcrypt";
 import Otp from "../../models/otp.model.js";
 import validator from "validator";
 
+import geoip from "geoip-lite";
+import satelize from "satelize";
+
 import User from "../../models/user.model.js";
 import { STATUS_CODES } from "../../utils/enums.js";
 import {
@@ -14,10 +17,12 @@ import {
 import resend from "../../config/resend.js";
 import { generateToken } from "../../utils/jwt.js";
 import mongoose from "mongoose";
+import axios from "axios";
 
 dotenv.config();
 
 async function sendOtp(emailId) {
+  console.log(" called otp send");
   if (!emailId || !validator.isEmail(emailId)) {
     return {
       success: false,
@@ -49,6 +54,7 @@ async function sendOtp(emailId) {
     expiresAt: Date.now() + 600000,
   });
   await otpVerify.save();
+  console.log("sending otp to email", emailId);
   const response = await resend.emails.send({
     from: "Inspect Track Support <noreply@baple.in>",
     to: emailId,
@@ -163,7 +169,20 @@ async function resendOtp(emailId) {
   }
 }
 
-async function verifyOtp(otpId, otp) {
+async function getLocationByIpAddress(lat, long) {
+  const response = await axios.get(
+    `https://maps.googleapis.com/maps/api/geocode/json?latlng= ${lat},${long}&result_type=street_address&key=${process.env.GOOGLE_MAPS_API_KEY}`
+  );
+  console.log("google map response: ", response);
+
+  if (response && response.data.status === "OK") {
+    return response.data.results[0].formatted_address;
+  } else {
+    return "No address found";
+  }
+}
+
+async function verifyOtp(req, otpId, otp, lat, long) {
   if (!otpId || !otp) {
     return {
       success: false,
@@ -180,8 +199,17 @@ async function verifyOtp(otpId, otp) {
       message: "Invalid OTP request",
     };
   }
+
+  const userEmail = otpRecord.email;
+
+  const existingUser = await User.findOne({ email: userEmail });
+  existingUser.formattedAddress = await getLocationByIpAddress(lat, long);
+  console.log("got address", existingUser.address);
+  await existingUser.save();
+
   if (Date.now() > otpRecord.expiresAt) {
     await Otp.findByIdAndDelete(otpId);
+
     return {
       success: false,
       status: STATUS_CODES.NOT_FOUND,
@@ -222,6 +250,7 @@ async function verifyOtp(otpId, otp) {
     success: true,
     status: isNewUser ? STATUS_CODES.CREATED : STATUS_CODES.OK,
     message: "OTP verified",
+
     accessToken: generateToken(user.id, otpRecord.email, 7),
     refreshToken: generateToken(user.id, otpRecord.email, 30),
     isNewUser: isNewUser,
