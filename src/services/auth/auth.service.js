@@ -250,11 +250,28 @@ async function verifyOtp(req, otpId, otp, lat, long) {
     success: true,
     status: isNewUser ? STATUS_CODES.CREATED : STATUS_CODES.OK,
     message: "OTP verified",
-
     accessToken: generateToken(user.id, otpRecord.email, 7),
     refreshToken: generateToken(user.id, otpRecord.email, 30),
     isNewUser: isNewUser,
   };
 }
 
-export default { sendOtp, verifyOtp, resendOtp };
+async function getUserProfile(userId) {
+  const user = await User.findOne({
+    _id: userId,
+  });
+
+  if (user) {
+    return {
+      status: STATUS_CODES.OK,
+      message: "User profile fetched successfully",
+      userEmail: user.email,
+      address: user.formattedAddress,
+    };
+  }
+  return {
+    status: STATUS_CODES.NOT_FOUND,
+    message: "User not found",
+  };
+}
+export default { sendOtp, verifyOtp, resendOtp, getUserProfile };

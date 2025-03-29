@@ -25,3 +25,19 @@ export const verifyToken = (token) => {
     return null;
   }
 };
+
+export const refreshAccessToken = (refreshToken) => {
+  const decoded = verifyToken(refreshToken);
+
+  if (!decoded) {
+    return null;
+  }
+
+  const newAccessToken = generateToken(decoded.id, decoded.email, 7);
+
+  return {
+    accessToken: newAccessToken,
+    userId: decoded.id,
+    email: decoded.email,
+  };
+};
