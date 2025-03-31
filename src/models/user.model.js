@@ -20,7 +20,7 @@ const userSchema = mongoose.Schema(
     role: {
       type: String,
       enum: Object.values(USER_ROLE),
-      default: USER_ROLE.FIELD_OFFICERS,
+      default: USER_ROLE.INSPECTOR,
     },
     department: {
       type: String,
