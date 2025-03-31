@@ -7,7 +7,7 @@ import geoip from "geoip-lite";
 import satelize from "satelize";
 
 import User from "../../models/user.model.js";
-import { STATUS_CODES } from "../../utils/enums.js";
+import { STATUS_CODES, USER_ROLE } from "../../utils/enums.js";
 import {
   MAX_OTP_ATTEMPTS,
   MAX_RESEND_OTP_ATTEMPTS,
@@ -245,14 +245,15 @@ async function verifyOtp(req, otpId, otp, lat, long) {
     await newUser.save();
   }
   await Otp.findByIdAndDelete(otpId);
-
+  
   return {
     success: true,
     status: isNewUser ? STATUS_CODES.CREATED : STATUS_CODES.OK,
     message: "OTP verified",
     accessToken: generateToken(user.id, otpRecord.email, 7),
     refreshToken: generateToken(user.id, otpRecord.email, 30),
-    isNewUser: isNewUser,
+    userAddress: existingUser.formattedAddress,
+    isProfileUpdated: existingUser.isUpdated,
   };
 }
 
@@ -274,4 +275,104 @@ async function getUserProfile(userId) {
     message: "User not found",
   };
 }
-export default { sendOtp, verifyOtp, resendOtp, getUserProfile };
+
+async function setUserRole({ userId, userType }) {
+  console.log(" input usertype", userType);
+  const user = await User.findOneAndUpdate(
+    { _id: userId },
+    { role: userType },
+    { new: true }
+  );
+  console.log("user role", USER_ROLE.COLLECTOR);
+
+  let requiredFields = {};
+  switch (userType) {
+    case USER_ROLE.COLLECTOR:
+      requiredFields = {
+        name: true,
+        contactNumber: true,
+        designation: true,
+        state: true,
+        region: true,
+        officialAddress: true,
+      };
+      return {
+        message: "Collector data",
+        userType,
+        requiredFields,
+      };
+    case USER_ROLE.HOD:
+      requiredFields = {
+        name: true,
+        contactNumber: true,
+        departmentName: true,
+        state: true,
+        region: true,
+        officialAddress: true,
+      };
+      return {
+        message: "HOD data",
+        userType,
+        requiredFields,
+      };
+    case USER_ROLE.INSPECTOR:
+      requiredFields = {
+        name: true,
+        contactNumber: true,
+        designation: true,
+        department: true,
+        assignedState: true,
+        assignedDistrrict: true,
+        state: true,
+        region: true,
+        officialAddress: true,
+      };
+      return {
+        message: "Inspector data",
+        userType,
+        requiredFields,
+      };
+    default:
+      return {
+        message: "Unknown user type",
+        userType,
+        status: STATUS_CODES.BAD_REQUEST,
+        requiredFields: {},
+      };
+  }
+}
+
+async function setUserProfile({
+  userId,
+  name,
+  contactNumber,
+  department,
+  state,
+}) {
+  const user = await User.findOneAndUpdate(
+    { _id: userId },
+    { name: name, phone: contactNumber, department: department, state: state },
+    { new: true }
+  );
+
+  if (user) {
+    user.isUpdated = true;
+    await user.save();
+  }
+
+  return {
+    status: user ? STATUS_CODES.OK : STATUS_CODES.INTERNAL_SERVER_ERROR,
+    message: user
+      ? "User profile updated successfully"
+      : "Failed to update user profile",
+  };
+}
+
+export default {
+  sendOtp,
+  verifyOtp,
+  resendOtp,
+  getUserProfile,
+  setUserRole,
+  setUserProfile,
+};

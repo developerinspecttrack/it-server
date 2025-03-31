@@ -10,6 +10,10 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    isUpdated: {
+      type: Boolean,
+      default: false,
+    },
     phone: {
       type: String,
     },
@@ -19,7 +23,11 @@ const userSchema = mongoose.Schema(
       default: USER_ROLE.FIELD_OFFICERS,
     },
     department: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
+      ref: "Department",
+    },
+    state: {
+      type: String,
       ref: "Department",
     },
     district: {

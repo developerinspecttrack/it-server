@@ -35,10 +35,13 @@ async function verifyOtp(req, res) {
     lat,
     long
   );
+  console.log("verify otp response", verificationResult);
   res.status(verificationResult.status).json({
     message: verificationResult.message,
     accessToken: verificationResult.accessToken,
     refreshToken: verificationResult.refreshToken,
+    userAddress: verificationResult.userAddress,
+    isProfileUpdated: verificationResult.isProfileUpdated,
   });
 }
 
